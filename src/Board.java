@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class Board {
@@ -60,7 +61,27 @@ public class Board {
         board.get(row * 9 + col).addAll(s);
     }
 
-    public String solution() {
+    public void simplePossibilities() {
+        boolean valuesChanged = false;
+
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (getValueAt(i, j).size() > 1) {
+                    HashSet<Integer> singleList = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+                    singleList.removeAll(getPeers(i, j));
+                    if (!singleList.equals(getValueAt(i, j))) {
+                        valuesChanged = true;
+                        setValueAt(singleList, i, j);
+                    }
+                }
+            }
+        }
+        if (valuesChanged) {
+            simplePossibilities();
+        }
+    }
+
+    public String toString() {
         String out = "";
         for (int i = 0; i < 81; i++) {
             out = out + board.get(i).toString();
