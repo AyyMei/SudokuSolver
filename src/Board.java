@@ -51,7 +51,23 @@ public class Board {
         return peers;
     }
 
+    public HashSet<Integer> getValueAt(int row, int col) {
+        return board.get(row * 9 + col);
+    }
+
+    public void setValueAt(HashSet<Integer> s, int row, int col) {
+        board.get(row * 9 + col).clear();
+        board.get(row * 9 + col).addAll(s);
+    }
+
     public String solution() {
-        return null;
+        String out = "";
+        for (int i = 0; i < 81; i++) {
+            out = out + board.get(i).toString();
+            if (i % 9 == 8) {
+                out = out + "\n";
+            }
+        }
+        return out;
     }
 }
