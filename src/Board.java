@@ -9,7 +9,7 @@ public class Board {
         this.board = board;
     }
 
-    // Returns solved content of the given row. Index starts at 0.
+    // Returns solved content of the given row.
     public HashSet<Integer> getRow(int r) {
         HashSet<Integer> row = new HashSet<>();
         for (int i = 0; i < 9; i++) {
@@ -20,7 +20,7 @@ public class Board {
         return row;
     }
 
-    // Returns solved content of the given column. Index starts at 0.
+    // Returns solved content of the given column.
     public HashSet<Integer> getCol(int c) {
         HashSet<Integer> col = new HashSet<>();
         for (int i = 0; i < 9; i++) {
@@ -33,11 +33,47 @@ public class Board {
 
     // Returns solved content of the 3x3 square that contains the given row and column.
     public HashSet<Integer> getSquare(int row, int col) {
-        int s = ((row / 3)*3 + (col / 3)); // Convert row, col into index of the box
+        int s = ((row / 3) * 3 + (col / 3)); // Convert row, col into index of the box
         HashSet<Integer> square = new HashSet<>();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (board.get(i + (j * 9) + ((s % 3) * 3 + (s / 3) * 27)).size() == 1) {
+                    square.addAll(board.get(i + (j * 9) + ((s % 3) * 3 + (s / 3) * 27)));
+                }
+            }
+        }
+        return square;
+    }
+
+    // Returns unsolved content of the given row excluding the given column.
+    public HashSet<Integer> getUnsolvedRow(int r, int c) {
+        HashSet<Integer> row = new HashSet<>();
+        for (int i = 0; i < 9; i++) {
+            if (board.get(r * 9 + i).size() > 1 && i != c) {
+                row.addAll(board.get(r * 9 + i));
+            }
+        }
+        return row;
+    }
+
+    // Returns unsolved content of the given column excluding the given row.
+    public HashSet<Integer> getUnsolvedCol(int r, int c) {
+        HashSet<Integer> col = new HashSet<>();
+        for (int i = 0; i < 9; i++) {
+            if (board.get(c + (9 * i)).size() > 1 && i != r) {
+                col.addAll(board.get(c + (9 * i)));
+            }
+        }
+        return col;
+    }
+
+    // Returns unsolved possibilities of the 3x3 square that contains the given box, excluding said box
+    public HashSet<Integer> getUnsolvedSquare(int row, int col) {
+        int s = ((row / 3) * 3 + (col / 3)); // Convert row, col into index of the box
+        HashSet<Integer> square = new HashSet<>();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board.get(i + (j * 9) + ((s % 3) * 3 + (s / 3) * 27)).size() > 1 && (col + row * 9) != ((i + (j * 9)) + ((s % 3) * 3 + (s / 3) * 27))) { // as long as it works
                     square.addAll(board.get(i + (j * 9) + ((s % 3) * 3 + (s / 3) * 27)));
                 }
             }
@@ -78,6 +114,40 @@ public class Board {
         }
         if (valuesChanged) {
             simplePossibilities();
+        }
+    }
+
+    public void hiddenSingles() { //hacky af but it works lmao
+        boolean valuesChanged = false;
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if(board.get(i * 9 + j).size() > 1) {
+                    HashSet<Integer> possibles = new HashSet<>(board.get(i * 9 + j));
+                    possibles.removeAll(getUnsolvedSquare(i, j));
+                    if (possibles.size() == 1) {
+                        setValueAt(possibles, i, j);
+                        valuesChanged = true;
+                        simplePossibilities();
+                    }
+                    possibles = new HashSet<>(board.get(i * 9 + j));
+                    possibles.removeAll(getUnsolvedRow(i, j));
+                    if (possibles.size() == 1) {
+                        setValueAt(possibles, i, j);
+                        valuesChanged = true;
+                        simplePossibilities();
+                    }
+                    possibles = new HashSet<>(board.get(i * 9 + j));
+                    possibles.removeAll(getUnsolvedCol(i, j));
+                    if (possibles.size() == 1) {
+                        setValueAt(possibles, i, j);
+                        valuesChanged = true;
+                        simplePossibilities();
+                    }
+                }
+            }
+        }
+        if (valuesChanged) {
+            hiddenSingles();
         }
     }
 
